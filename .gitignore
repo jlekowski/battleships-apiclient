@@ -1,0 +1,3 @@
+/bin/
+/vendor/
+!bin/client.php
