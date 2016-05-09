@@ -2,12 +2,20 @@
 
 namespace BattleshipsApi\Client\Request;
 
-//use AppBundle\Http\Headers;
 use BattleshipsApi\Client\Exception\E2eException;
 use BattleshipsApi\Client\Response\ApiResponse;
 
 class ApiRequest
 {
+    // @todo maybe have common Core/Config repo with these constants, similar as with the header?
+    const EVENT_TYPE_CHAT = 'chat';
+    const EVENT_TYPE_SHOT = 'shot';
+    const EVENT_TYPE_JOIN_GAME = 'join_game';
+    const EVENT_TYPE_START_GAME = 'start_game';
+    const EVENT_TYPE_NAME_UPDATE = 'name_update';
+    const EVENT_TYPE_NEW_GAME = 'new_game';
+    const HEADER_API_KEY = 'Api-Key';
+
     private $baseUrl;
     private $ch;
     private $authToken;
@@ -41,8 +49,7 @@ class ApiRequest
         $user = new \stdClass();
         $user->name = $name;
         $user->id = $this->getNewId($response);
-//        $user->apiKey = $response->getHeader(Headers::API_KEY);
-        $user->apiKey = $response->getHeader('Api-Key');
+        $user->apiKey = $response->getHeader(self::HEADER_API_KEY);
 
         return $user;
     }
