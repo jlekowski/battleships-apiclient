@@ -1,5 +1,5 @@
 {
-    "name": "jlekowski/battleships-apiclitn",
+    "name": "jlekowski/battleships-apiclient",
     "description" : "Battleships (sea battle) game - API Client",
     "type": "library",
     "license": "MIT",

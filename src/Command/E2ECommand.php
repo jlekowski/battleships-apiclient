@@ -115,5 +115,6 @@ class E2ECommand extends Command
     private function outputResponse(OutputInterface $output, ApiResponse $response)
     {
         $output->writeln(sprintf('<comment>%s</comment>', print_r($response->getJson(), true)), OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln(sprintf('<comment>%s</comment>', print_r($response->getHeaders(), true)), OutputInterface::VERBOSITY_VERY_VERBOSE);
     }
 }

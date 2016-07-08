@@ -4,8 +4,10 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use BattleshipsApi\Client\Command\E2ECommand;
+use BattleshipsApi\Client\Command\VarnishTestCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
 $application->add(new E2ECommand());
+$application->add(new VarnishTestCommand());
 $application->run();

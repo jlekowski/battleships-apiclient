@@ -15,6 +15,7 @@ class ApiRequest
     const EVENT_TYPE_NAME_UPDATE = 'name_update';
     const EVENT_TYPE_NEW_GAME = 'new_game';
     const HEADER_API_KEY = 'Api-Key';
+    const HEADER_VARNISH_DEBUG = 'X-Cache';
 
     private $baseUrl;
     private $ch;
@@ -179,7 +180,7 @@ class ApiRequest
         }
         $paramString = $params ? ('?' . implode('&', $params)) : '';
 
-        $requestDetails = new RequestDetails(sprintf('/games/%s/events', $gameId, $paramString), 'GET', null, 200);
+        $requestDetails = new RequestDetails(sprintf('/games/%s/events%s', $gameId, $paramString), 'GET', null, 200);
 
         return $this->call($requestDetails);
     }
@@ -188,12 +189,12 @@ class ApiRequest
      * @param ApiResponse $response
      * @return int
      */
-    private function getNewId(ApiResponse $response)
+    public function getNewId(ApiResponse $response)
     {
         $location = $response->getHeader('Location');
         preg_match('/\/(\d+)$/', $location, $match);
 
-        return $match[1];
+        return (int)$match[1];
     }
 
 //    public function initGame()
