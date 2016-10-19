@@ -85,13 +85,13 @@ class E2ECommand extends Command
         $output->writeln('Game to be Patched (other ships)');
         $response = $apiRequest->updateGame(
             $gameId,
-            ['A10','C2','D2','F2','H2','J2','F5','F6','I6','J6','A7','B7','C7','F7','F8','I9','J9','E10','F10','G10']
+            ['A1','E1','A2','D3','E3','F3','J3','H4','J4','A5','B5','C5','D5','J5','H6','B9','E9','F9','B10','H10']
         );
         $output->writeln('Game Patched (other ships)');
         $this->outputResponse($output, $response);
 
         $apiRequest->setAuthToken($user->apiKey);
-        $response = $apiRequest->createEvent($gameId, ApiRequest::EVENT_TYPE_SHOT, 'A10');
+        $response = $apiRequest->createEvent($gameId, ApiRequest::EVENT_TYPE_SHOT, 'B10');
         $output->writeln('Shot added');
         $this->outputResponse($output, $response);
 
