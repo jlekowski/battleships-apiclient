@@ -1,13 +1,16 @@
 #!/usr/bin/env php
 <?php
+declare(strict_types = 1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use BattleshipsApi\Client\Command\E2ECommand;
+use BattleshipsApi\Client\Command\ApiCallCommand;
+use BattleshipsApi\Client\Command\E2ETestCommand;
 use BattleshipsApi\Client\Command\VarnishTestCommand;
 use Symfony\Component\Console\Application;
 
 $application = new Application();
-$application->add(new E2ECommand());
+$application->add(new E2ETestCommand());
 $application->add(new VarnishTestCommand());
+$application->add(new ApiCallCommand());
 $application->run();

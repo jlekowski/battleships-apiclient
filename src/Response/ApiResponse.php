@@ -2,58 +2,109 @@
 
 namespace BattleshipsApi\Client\Response;
 
+use Psr\Http\Message\ResponseInterface;
+
 class ApiResponse
 {
+    const HEADER_API_KEY = 'Api-Key';
+    const HEADER_VARNISH_DEBUG = 'X-Cache';
+
+    /**
+     * @var ResponseInterface
+     */
+    protected $response;
+
     /**
      * @var string
      */
-    private $body;
+    protected $body;
 
     /**
-     * @var array
+     * @var mixed
      */
-    private $headers;
+    protected $json;
 
     /**
-     * @param string $body
-     * @param array $headers
+     * @var string
      */
-    public function __construct($body, array $headers)
+    protected $jsonError = '';
+
+    /**
+     * @param ResponseInterface $response
+     * @throws \InvalidArgumentException
+     */
+    public function __construct(ResponseInterface $response)
     {
-        $this->body = $body;
-        $this->headers = $headers;
+        $this->response = $response;
+        $this->body = $this->response->getBody()->getContents();
+        try {
+            $this->json = \GuzzleHttp\json_decode($this->body);
+        } catch (\InvalidArgumentException $e) {
+            $this->jsonError = $e->getMessage();
+        }
+    }
+
+    /**
+     * @return ResponseInterface
+     */
+    public function getResponse(): ResponseInterface
+    {
+        return $this->response;
     }
 
     /**
      * @return string
      */
-    public function getBody()
+    public function getBody(): string
     {
         return $this->body;
     }
 
     /**
-     * @return array
+     * @return mixed Result of json_decode()
      */
-    public function getHeaders()
+    public function getJson()
     {
-        return $this->headers;
+        return $this->json;
+    }
+
+    /**
+     * @return string
+     */
+    public function getJsonError(): string
+    {
+        return $this->jsonError;
     }
 
     /**
      * @param string $header
      * @return string|null
      */
-    public function getHeader($header)
+    public function getHeader(string $header)
     {
-        return isset($this->headers[$header]) ? $this->headers[$header] : null;
+        return $this->response->hasHeader($header) ? $this->response->getHeader($header)[0] : null;
     }
 
     /**
-     * @return \stdClass|mixed
+     * @return string[]
      */
-    public function getJson()
+    public function getHeaders(): array
     {
-        return json_decode($this->body);
+        return $this->response->getHeaders();
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getNewId()
+    {
+        $location = $this->getHeader('Location');
+        if ($location === null) {
+            return null;
+        }
+
+        preg_match('/\/(\d+)$/', $location, $match);
+
+        return (int)$match[1];
     }
 }

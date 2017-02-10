@@ -1,0 +1,15 @@
+language: php
+php:
+  - 7.0
+  - 7.1
+  - nightly
+
+before_install:
+  - composer self-update
+
+install:
+  - composer install
+
+script:
+  - bin/phpunit
+  - bin/phpcs -p --standard=PSR2 --exclude=Generic.Files.LineLength src/ tests/

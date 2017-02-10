@@ -2,6 +2,9 @@
 
 namespace BattleshipsApi\Client\Request;
 
+/**
+ * @codeCoverageIgnore
+ */
 class RequestDetails
 {
     private $request;
