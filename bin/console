@@ -4,13 +4,17 @@ declare(strict_types = 1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use BattleshipsApi\Client\Client\ApiClientFactory;
 use BattleshipsApi\Client\Command\ApiCallCommand;
 use BattleshipsApi\Client\Command\E2ETestCommand;
 use BattleshipsApi\Client\Command\VarnishTestCommand;
 use Symfony\Component\Console\Application;
 
+// declare ApiClient
+$apiClient = ApiClientFactory::build(['timeout' => 5]);
+
 $application = new Application();
-$application->add(new E2ETestCommand());
-$application->add(new VarnishTestCommand());
-$application->add(new ApiCallCommand());
+$application->add(new E2ETestCommand($apiClient));
+$application->add(new VarnishTestCommand($apiClient));
+$application->add(new ApiCallCommand($apiClient));
 $application->run();

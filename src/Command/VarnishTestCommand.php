@@ -2,7 +2,6 @@
 
 namespace BattleshipsApi\Client\Command;
 
-use BattleshipsApi\Client\Client\ApiClient;
 use BattleshipsApi\Client\Event\ApiClientEvents;
 use BattleshipsApi\Client\Event\PostRequestEvent;
 use BattleshipsApi\Client\Listener\RequestConfigListener;
@@ -16,16 +15,13 @@ use BattleshipsApi\Client\Request\Game\UpdateGameRequest;
 use BattleshipsApi\Client\Request\User\CreateUserRequest;
 use BattleshipsApi\Client\Response\ApiResponse;
 use BattleshipsApi\Client\Subscriber\LogSubscriber;
-use GuzzleHttp\Client;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Stopwatch\Stopwatch;
 
-class VarnishTestCommand extends Command
+class VarnishTestCommand extends ApiClientAwareCommand
 {
     const VARNISH_DEBUG_HIT = 'HIT';
     const VARNISH_DEBUG_MISS = 'MISS';
@@ -60,14 +56,13 @@ class VarnishTestCommand extends Command
         $baseUri = $input->getArgument('uri');
         $apiVersion = (int)$input->getArgument('version');
 
-        // declare ApiClient
-        $client = new Client(['base_uri' => $baseUri]);
-        $dispatcher = new EventDispatcher();
-        $apiClient = new ApiClient($client, $dispatcher);
+        // set base uri
+        $this->apiClient->setBaseUri($baseUri);
+        // get dispatcher
+        $dispatcher = $this->apiClient->getDispatcher();
 
         $logger = new ConsoleLogger($output);
-        $logSubscriber = new LogSubscriber($logger);
-        $dispatcher->addSubscriber($logSubscriber);
+        $dispatcher->addSubscriber(new LogSubscriber($logger));
 
         $requestConfigListener = new RequestConfigListener($apiVersion);
         $dispatcher->addListener(ApiClientEvents::PRE_RESOLVE, [$requestConfigListener, 'onPreResolve']);
@@ -82,7 +77,7 @@ class VarnishTestCommand extends Command
         // Add player 1
         $request = new CreateUserRequest();
         $request->setUserName('New Player');
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $apiKey = $response->getHeader(ApiResponse::HEADER_API_KEY);
 
         // set api key
@@ -99,14 +94,14 @@ class VarnishTestCommand extends Command
 
         // Add game 1
         $request = new CreateGameRequest();
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $gameId1 = $response->getNewId();
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
 
         // Add game 2
         $request = new CreateGameRequest();
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $gameId2 = $response->getNewId();
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
@@ -114,7 +109,7 @@ class VarnishTestCommand extends Command
         // Add player 2
         $request = new CreateUserRequest();
         $request->setUserName('New Player2');
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $apiKey2 = $response->getHeader(ApiResponse::HEADER_API_KEY);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
@@ -124,7 +119,7 @@ class VarnishTestCommand extends Command
         // Get available games
         $request = new GetGamesRequest();
         $request->setAvailable(true);
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $availableGames = $response->getJson();
 
         $expectedGames = [$gameId1, $gameId2];
@@ -147,7 +142,7 @@ class VarnishTestCommand extends Command
         // Get available games from Varnish
         $request = new GetGamesRequest();
         $request->setAvailable(true);
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $availableGames = $response->getJson();
 
         $expectedGames = [$gameId1, $gameId2];
@@ -173,7 +168,7 @@ class VarnishTestCommand extends Command
             ->setGameId($gameId2)
             ->setJoinGame(true)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
 
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
         usleep(self::VARNISH_RACE_CONDITION_SLEEP);
@@ -182,7 +177,7 @@ class VarnishTestCommand extends Command
         // Get available games
         $request = new GetGamesRequest();
         $request->setAvailable(true);
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $availableGames = $response->getJson();
 
         $expectedGames = [$gameId1];
@@ -205,7 +200,7 @@ class VarnishTestCommand extends Command
         // Get available games from varnish
         $request = new GetGamesRequest();
         $request->setAvailable(true);
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $availableGames = $response->getJson();
 
         $expectedGames = [$gameId1];
@@ -235,7 +230,7 @@ class VarnishTestCommand extends Command
             ->setEventType(EventTypes::EVENT_TYPE_CHAT)
             ->setEventValue('Test chat')
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
 
@@ -244,7 +239,7 @@ class VarnishTestCommand extends Command
         $request
             ->setGameId($gameId2)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $joinEventId = $response->getJson()[0]->id;
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
@@ -252,7 +247,7 @@ class VarnishTestCommand extends Command
         // Get all events from Varnish
         $request = new GetEventsRequest();
         $request->setGameId($gameId2);
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_HIT);
 
 
@@ -262,12 +257,12 @@ class VarnishTestCommand extends Command
             ->setGameId($gameId2)
             ->setType(EventTypes::EVENT_TYPE_JOIN_GAME)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
 
         // Get all join_game events from Varnish
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_HIT);
 
 
@@ -277,12 +272,12 @@ class VarnishTestCommand extends Command
             ->setGameId($gameId2)
             ->setGt($joinEventId)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
 
         // Get all join_game events from Varnish
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_HIT);
 
 
@@ -293,7 +288,7 @@ class VarnishTestCommand extends Command
             ->setEventType(EventTypes::EVENT_TYPE_CHAT)
             ->setEventValue('Test chat2')
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
         usleep(self::VARNISH_RACE_CONDITION_SLEEP);
 
@@ -301,13 +296,13 @@ class VarnishTestCommand extends Command
         // Get all events
         $request = new GetEventsRequest();
         $request->setGameId($gameId2);
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $joinEventId = $response->getJson()[0]->id;
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
 
         // Get all events from Varnish
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_HIT);
 
 
@@ -317,12 +312,12 @@ class VarnishTestCommand extends Command
             ->setGameId($gameId2)
             ->setType(EventTypes::EVENT_TYPE_JOIN_GAME)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
 
         // Get all join_game events from Varnish
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_HIT);
 
 
@@ -330,7 +325,7 @@ class VarnishTestCommand extends Command
         $requestConfigListener->setApiKey($apiKey);
 
         // Get all join_game events not from Varnish for user1 (caching per user)
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
 
@@ -340,12 +335,12 @@ class VarnishTestCommand extends Command
             ->setGameId($gameId2)
             ->setGt($joinEventId)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
 
 
         // Get all new events from Varnish for user1
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_HIT);
 
 
@@ -372,10 +367,6 @@ class VarnishTestCommand extends Command
      */
     private function verifyHeaderFromResponse(ApiResponse $response, $headerExpected)
     {
-        try {
-            $this->verifyHeader($response->getHeader(ApiResponse::HEADER_VARNISH_DEBUG), $headerExpected);
-        } catch (UnexpectedHeaderException $e) {
-            throw $e;
-        }
+        $this->verifyHeader($response->getHeader(ApiResponse::HEADER_VARNISH_DEBUG), $headerExpected);
     }
 }

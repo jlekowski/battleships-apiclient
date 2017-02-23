@@ -1,5 +1,12 @@
+- console - think about a better way to inject dependencies for commands (DI Component?)
+
+- proper tests for VarnishTestCommand and E2ETestCommand
+
+- improve or replace E2eException
+
+- ApiClientFactory test - check if guzzle client config is testable
+
 - VarnishTestCommand
-  * clean verifyHeaderFromResponse() (remove try/catch)
   * default API url to be in config
 
 - ApiCallCommand - remove/change timeout for the Client

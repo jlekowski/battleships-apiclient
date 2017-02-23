@@ -2,7 +2,6 @@
 
 namespace BattleshipsApi\Client\Command;
 
-use BattleshipsApi\Client\Client\ApiClient;
 use BattleshipsApi\Client\Event\ApiClientEvents;
 use BattleshipsApi\Client\Event\PostRequestEvent;
 use BattleshipsApi\Client\Listener\RequestConfigListener;
@@ -21,16 +20,13 @@ use BattleshipsApi\Client\Request\User\GetUserRequest;
 use BattleshipsApi\Client\Request\User\UpdateUserRequest;
 use BattleshipsApi\Client\Response\ApiResponse;
 use BattleshipsApi\Client\Subscriber\LogSubscriber;
-use GuzzleHttp\Client;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Stopwatch\Stopwatch;
 
-class E2ETestCommand extends Command
+class E2ETestCommand extends ApiClientAwareCommand
 {
     /**
      * @inheritdoc
@@ -56,20 +52,19 @@ class E2ETestCommand extends Command
         $baseUri = $input->getArgument('uri');
         $apiVersion = (int)$input->getArgument('version');
 
-        // declare ApiClient
-        $client = new Client(['base_uri' => $baseUri]);
-        $dispatcher = new EventDispatcher();
-        $apiClient = new ApiClient($client, $dispatcher);
+        // set base uri
+        $this->apiClient->setBaseUri($baseUri);
+        // get dispatcher
+        $dispatcher = $this->apiClient->getDispatcher();
+
+        $logger = new ConsoleLogger($output);
+        $dispatcher->addSubscriber(new LogSubscriber($logger));
 
         $requestConfigListener = new RequestConfigListener($apiVersion);
         $dispatcher->addListener(ApiClientEvents::PRE_RESOLVE, [$requestConfigListener, 'onPreResolve']);
         $dispatcher->addListener(ApiClientEvents::POST_REQUEST, function (PostRequestEvent $event) {
             $this->verifyResponse($event->getResponse(), $event->getRequest());
         });
-
-        $logger = new ConsoleLogger($output);
-        $logSubscriber = new LogSubscriber($logger);
-        $dispatcher->addSubscriber($logSubscriber);
 
 
         // create user
@@ -78,7 +73,7 @@ class E2ETestCommand extends Command
             ->setUserName('New Player')
         ;
 
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $userId = $response->getNewId();
         $apiKey = $response->getHeader(ApiResponse::HEADER_API_KEY);
         $output->writeln(sprintf('User Id: %s', $userId));
@@ -89,7 +84,7 @@ class E2ETestCommand extends Command
 
         // create game
         $request = new CreateGameRequest();
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $gameId = $response->getNewId();
         $output->writeln(sprintf('Game Id: %s', $gameId));
 
@@ -98,7 +93,7 @@ class E2ETestCommand extends Command
         $request
             ->setGameId($gameId)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('Game for player');
         $this->outputResponse($output, $response);
 
@@ -108,7 +103,7 @@ class E2ETestCommand extends Command
             ->setUserId($userId)
             ->setUserName('New Player 132')
         ;
-        $apiClient->call($request);
+        $this->apiClient->call($request);
         $output->writeln('User Patched (name)');
 
         // get user
@@ -116,7 +111,7 @@ class E2ETestCommand extends Command
         $request
             ->setUserId($userId)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('User details');
         $this->outputResponse($output, $response);
 
@@ -127,7 +122,7 @@ class E2ETestCommand extends Command
             ->setPlayerShips(['A1','C2','D2','F2','H2','J2','F5','F6','I6','J6','A7','B7','C7','F7','F8','I9','J9','E10','F10','G10'])
         ;
         $output->writeln('Game to be Patched (player ships)');
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('Game Patched (player ships)');
         $this->outputResponse($output, $response);
 
@@ -139,7 +134,7 @@ class E2ETestCommand extends Command
             ->setEventType(EventTypes::EVENT_TYPE_CHAT)
             ->setEventValue('Test chat')
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $eventId = $response->getNewId();
         $output->writeln('Chat added');
         $this->outputResponse($output, $response);
@@ -150,7 +145,7 @@ class E2ETestCommand extends Command
             ->setGameId($gameId)
             ->setEventId($eventId)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('Event details');
         $this->outputResponse($output, $response);
 
@@ -160,7 +155,7 @@ class E2ETestCommand extends Command
             ->setUserName('New Other')
         ;
 
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $userId2 = $response->getNewId();
         $apiKey2 = $response->getHeader(ApiResponse::HEADER_API_KEY);
         $output->writeln(sprintf('Other Id: %s', $userId2));
@@ -174,7 +169,7 @@ class E2ETestCommand extends Command
         $request
             ->setAvailable(true)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('Available games for other');
         $this->outputResponse($output, $response);
 
@@ -185,7 +180,7 @@ class E2ETestCommand extends Command
             ->setGameId($gameId)
             ->setJoinGame(true)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('Game Patched (other join)');
         $this->outputResponse($output, $response);
 
@@ -194,7 +189,7 @@ class E2ETestCommand extends Command
         $request
             ->setGameId($gameId)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('Game for other');
         $this->outputResponse($output, $response);
 
@@ -205,7 +200,7 @@ class E2ETestCommand extends Command
             ->setGameId($gameId)
             ->setPlayerShips(['A1','E1','A2','D3','E3','F3','J3','H4','J4','A5','B5','C5','D5','J5','H6','B9','E9','F9','B10','H10'])
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('Game Patched (other ships)');
         $this->outputResponse($output, $response);
 
@@ -219,7 +214,7 @@ class E2ETestCommand extends Command
             ->setEventType(EventTypes::EVENT_TYPE_SHOT)
             ->setEventValue('B10')
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('Shot added');
         $this->outputResponse($output, $response);
 
@@ -229,7 +224,7 @@ class E2ETestCommand extends Command
             ->setGameId($gameId)
             ->setGt(0)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->outputResponse($output, $response);
 
         // get events
@@ -239,7 +234,7 @@ class E2ETestCommand extends Command
             ->setGt(0)
             ->setType(EventTypes::EVENT_TYPE_SHOT)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $this->outputResponse($output, $response);
 
         // get game
@@ -247,7 +242,7 @@ class E2ETestCommand extends Command
         $request
             ->setGameId($gameId)
         ;
-        $response = $apiClient->call($request);
+        $response = $this->apiClient->call($request);
         $output->writeln('Game for player');
         $this->outputResponse($output, $response);
 

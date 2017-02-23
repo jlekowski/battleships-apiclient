@@ -28,6 +28,11 @@ class ApiClient
     protected $dispatcher;
 
     /**
+     * @var string
+     */
+    protected $baseUri;
+
+    /**
      * @param ClientInterface $httpClient
      * @param EventDispatcherInterface $dispatcher
      */
@@ -54,7 +59,8 @@ class ApiClient
                 [
                     //RequestOptions::DEBUG => true,
                     RequestOptions::HEADERS => $request->getHeaders(),
-                    RequestOptions::JSON => $request->getData()
+                    RequestOptions::JSON => $request->getData(),
+                    'base_uri' => $this->baseUri
                 ]
             );
             $apiResponse = new ApiResponse($response);
@@ -66,6 +72,17 @@ class ApiClient
         $this->dispatcher->dispatch(ApiClientEvents::POST_REQUEST, new PostRequestEvent($request, $apiResponse));
 
         return $apiResponse;
+    }
+
+    /**
+     * @param string|null $baseUri
+     * @return $this|ApiClient
+     */
+    public function setBaseUri(string $baseUri = null): self
+    {
+        $this->baseUri = $baseUri;
+
+        return $this;
     }
 
     /**

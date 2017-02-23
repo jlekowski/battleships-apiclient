@@ -2,20 +2,16 @@
 
 namespace BattleshipsApi\Client\Command;
 
-use BattleshipsApi\Client\Client\ApiClient;
 use BattleshipsApi\Client\Request\ApiRequest;
 use BattleshipsApi\Client\Response\ApiResponse;
 use BattleshipsApi\Client\Subscriber\LogSubscriber;
-use GuzzleHttp\Client;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Logger\ConsoleLogger;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Stopwatch\Stopwatch;
 
-class ApiCallCommand extends Command
+class ApiCallCommand extends ApiClientAwareCommand
 {
     /**
      * @inheritdoc
@@ -46,11 +42,8 @@ class ApiCallCommand extends Command
         $apiKey = $input->getOption('key');
         $data = $input->getOption('data');
 
-        // declare ApiClient
-        $client = new Client(['timeout' => 2]);
-        $dispatcher = new EventDispatcher();
-        $dispatcher->addSubscriber(new LogSubscriber(new ConsoleLogger($output)));
-        $apiClient = new ApiClient($client, $dispatcher);
+        // add log subscriber
+        $this->apiClient->getDispatcher()->addSubscriber(new LogSubscriber(new ConsoleLogger($output)));
 
         $apiRequest = new ApiRequest();
         $apiRequest
@@ -60,14 +53,14 @@ class ApiCallCommand extends Command
             ->setData($data)
         ;
 
-        $apiResponse = $apiClient->call($apiRequest);
+        $apiResponse = $this->apiClient->call($apiRequest);
         $output->writeln('Body:');
         $output->writeln($apiResponse->getBody());
         $output->writeln(sprintf('HTTP Code: %d', $apiResponse->getResponse()->getStatusCode()));
         $this->outputResponse($output, $apiResponse);
 
         $event = $stopwatch->stop('execute');
-        $output->writeln(sprintf('<info>Finished in %d</info>', $event->getDuration()), OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln(sprintf('<info>Finished in %d</info>', $event->getDuration() / 1000), OutputInterface::VERBOSITY_VERBOSE);
     }
 
     /**
