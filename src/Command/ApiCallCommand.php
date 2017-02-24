@@ -60,7 +60,7 @@ class ApiCallCommand extends ApiClientAwareCommand
         $this->outputResponse($output, $apiResponse);
 
         $event = $stopwatch->stop('execute');
-        $output->writeln(sprintf('<info>Finished in %d</info>', $event->getDuration() / 1000), OutputInterface::VERBOSITY_VERBOSE);
+        $output->writeln(sprintf('<info>Finished in %s</info>', $event->getDuration() / 1000), OutputInterface::VERBOSITY_VERBOSE);
     }
 
     /**

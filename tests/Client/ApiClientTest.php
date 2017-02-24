@@ -69,8 +69,7 @@ class ApiClientTest extends TestCase
                 'http://test.api/v1',
                 [
                     RequestOptions::HEADERS => ['testHeader'],
-                    RequestOptions::JSON => ['testKey' => 'testValue'],
-                    'base_uri' => null
+                    RequestOptions::JSON => ['testKey' => 'testValue']
                 ]
             )
             ->willReturn($apiResponse)
@@ -141,6 +140,46 @@ class ApiClientTest extends TestCase
 
         $response = $this->apiClient
             ->setBaseUri('http://base.uri:8080')
+            ->call($apiRequest->reveal())
+        ;
+        $this->assertInstanceOf(ApiResponse::class, $response);
+        $this->assertObjectHasAttribute('testKey', $response->getJson());
+        $this->assertEquals(['testKey' => 'testValue'], (array)$response->getJson());
+        $this->assertEquals($apiResponse->reveal(), $response->getResponse());
+    }
+
+    public function testSetBaseUriNull()
+    {
+        $this->dispatcher->dispatch(Argument::any());
+
+        $apiRequest = $this->prophesize(ApiRequest::class);
+        $apiRequest->resolve();
+        $apiRequest->getHttpMethod()->willReturn('TEST');
+        $apiRequest->getUri()->willReturn('/v1/users');
+        $apiRequest->getHeaders()->willReturn(['testHeader']);
+        $apiRequest->getData()->willReturn(['testKey' => 'testValue']);
+
+        $stream = $this->prophesize(StreamInterface::class);
+        $stream->getContents()->willReturn('{"testKey":"testValue"}');
+
+        $apiResponse = $this->prophesize(ResponseInterface::class);
+        $apiResponse->getBody()->willReturn($stream);
+
+        $this->httpClient
+            ->request(
+                'TEST',
+                '/v1/users',
+                [
+                    RequestOptions::HEADERS => ['testHeader'],
+                    RequestOptions::JSON => ['testKey' => 'testValue']
+                ]
+            )
+            ->willReturn($apiResponse)
+        ;
+
+
+        $response = $this->apiClient
+            ->setBaseUri(null)
             ->call($apiRequest->reveal())
         ;
         $this->assertInstanceOf(ApiResponse::class, $response);

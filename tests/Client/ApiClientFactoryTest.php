@@ -7,6 +7,8 @@ use BattleshipsApi\Client\Client\ApiClientFactory;
 use BattleshipsApi\Client\Event\ApiClientEvents;
 use BattleshipsApi\Client\Listener\RequestConfigListener;
 use BattleshipsApi\Client\Subscriber\LogSubscriber;
+use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Psr7\Uri;
 use PHPUnit\Framework\TestCase;
 use Prophecy\Argument;
 use Psr\Log\LoggerInterface;
@@ -25,10 +27,23 @@ class ApiClientFactoryTest extends TestCase
 
     public function testBuildWithBaseUriAndTimeout()
     {
-        $apiClient = ApiClientFactory::build(['base_uri' => 'http://api.test', 'timeout' => 2]);
+        $apiClient = ApiClientFactory::build(['baseUri' => 'http://api.test', 'timeout' => 2]);
 
         $this->assertInstanceOf(ApiClient::class, $apiClient);
         $this->assertInstanceOf(EventDispatcherInterface::class, $apiClient->getDispatcher());
+
+        // magic to check if baseUri and timeout are set in httpClient
+        $getHttpClient = function () {
+            return $this->httpClient;
+        };
+        /** @var ClientInterface $httpClient */
+        $httpClient = $getHttpClient->call($apiClient);
+        $this->assertInstanceOf(ClientInterface::class, $httpClient);
+        $this->assertEquals(2, $httpClient->getConfig('timeout'));
+        /** @var Uri $uri */
+        $uri = $httpClient->getConfig('base_uri');
+        $this->assertInstanceOf(Uri::class, $uri);
+        $this->assertEquals('api.test', $uri->getHost());
     }
 
     public function testBuildWithVersionAndKey()
@@ -102,7 +117,7 @@ class ApiClientFactoryTest extends TestCase
         $dispatcher->addSubscriber($subscriber2)->shouldBeCalled();
 
         $buildConfig = [
-            'base_uri' => 'http://api.test',
+            'baseUri' => 'http://api.test',
             'timeout' => 2,
             'version' => 13,
             'key' => 'test-key',
@@ -114,5 +129,18 @@ class ApiClientFactoryTest extends TestCase
 
         $this->assertInstanceOf(ApiClient::class, $apiClient);
         $this->assertSame($dispatcher->reveal(), $apiClient->getDispatcher());
+
+        // magic to check if baseUri and timeout are set in httpClient
+        $getHttpClient = function () {
+            return $this->httpClient;
+        };
+        /** @var ClientInterface $httpClient */
+        $httpClient = $getHttpClient->call($apiClient);
+        $this->assertInstanceOf(ClientInterface::class, $httpClient);
+        $this->assertEquals(2, $httpClient->getConfig('timeout'));
+        /** @var Uri $uri */
+        $uri = $httpClient->getConfig('base_uri');
+        $this->assertInstanceOf(Uri::class, $uri);
+        $this->assertEquals('api.test', $uri->getHost());
     }
 }

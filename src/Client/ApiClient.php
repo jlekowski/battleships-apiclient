@@ -52,16 +52,21 @@ class ApiClient
     {
         $this->dispatcher->dispatch(ApiClientEvents::PRE_RESOLVE, new PreResolveEvent($request));
         $request->resolve();
+
+        $httpClientOptions = [
+            //RequestOptions::DEBUG => true,
+            RequestOptions::HEADERS => $request->getHeaders(),
+            RequestOptions::JSON => $request->getData()
+        ];
+        if ($this->baseUri !== null) {
+            $httpClientOptions['base_uri'] = $this->baseUri;
+        }
+
         try {
             $response = $this->httpClient->request(
                 $request->getHttpMethod(),
                 $request->getUri(),
-                [
-                    //RequestOptions::DEBUG => true,
-                    RequestOptions::HEADERS => $request->getHeaders(),
-                    RequestOptions::JSON => $request->getData(),
-                    'base_uri' => $this->baseUri
-                ]
+                $httpClientOptions
             );
             $apiResponse = new ApiResponse($response);
         } catch (GuzzleException $e) {

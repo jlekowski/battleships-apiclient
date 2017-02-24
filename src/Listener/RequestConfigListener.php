@@ -58,9 +58,11 @@ class RequestConfigListener
             throw new \RuntimeException('API Version must be set');
         }
 
-        $event->getRequest()
-            ->setApiVersion($this->apiVersion)
-            ->setApiKey($this->apiKey)
-        ;
+        $apiRequest = $event->getRequest();
+        $apiRequest->setApiVersion($this->apiVersion);
+        // If request has a key set up already we most likely don't want to remove it. If not, it's null by default
+        if ($this->apiKey !== null) {
+            $apiRequest->setApiKey($this->apiKey);
+        }
     }
 }

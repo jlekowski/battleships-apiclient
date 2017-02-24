@@ -6,6 +6,10 @@
 
 - ApiClientFactory test - check if guzzle client config is testable
 
+- ApiClient::call() - manage debug option (instead of having it commented out)
+
+- RequestConfigListener - maybe have isApiKeySet() isApiVersionSet() in ApiRequest not to overwrite manually set config
+
 - VarnishTestCommand
   * default API url to be in config
 

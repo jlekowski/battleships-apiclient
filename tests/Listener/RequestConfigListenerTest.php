@@ -6,6 +6,7 @@ use BattleshipsApi\Client\Event\PreResolveEvent;
 use BattleshipsApi\Client\Listener\RequestConfigListener;
 use BattleshipsApi\Client\Request\ApiRequest;
 use PHPUnit\Framework\TestCase;
+use Prophecy\Argument;
 
 class RequestConfigListenerTest extends TestCase
 {
@@ -52,7 +53,11 @@ class RequestConfigListenerTest extends TestCase
     {
         $apiRequest = $this->prophesize(ApiRequest::class);
         $apiRequest->setApiVersion($apiVersion)->willReturn($apiRequest);
-        $apiRequest->setApiKey($apiKey)->willReturn($apiRequest);
+        if ($apiKey === null) {
+            $apiRequest->setApiKey(Argument::any())->shouldNotBeCalled();
+        } else {
+            $apiRequest->setApiKey($apiKey)->willReturn($apiRequest);
+        }
 
         $event = $this->prophesize(PreResolveEvent::class);
         $event->getRequest()->willReturn($apiRequest);
