@@ -80,7 +80,7 @@ class CreateEventRequestTest extends TestCase
         // check http method
         $this->assertEquals('POST', $this->apiRequest->getHttpMethod());
         // check uri
-        $this->assertEquals(sprintf('/v1/games/12/events', EventTypes::EVENT_TYPE_SHOT), $this->apiRequest->getUri());
+        $this->assertEquals('/v1/games/12/events', $this->apiRequest->getUri());
         // check headers
         $this->assertEquals(['Authorization' => 'Bearer testKey'], $this->apiRequest->getHeaders());
         // check data

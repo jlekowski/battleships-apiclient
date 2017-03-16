@@ -1,10 +1,11 @@
+- create GetGameResponse etc. and ShotRequest etc.
+- do I need preRequest (after resolve) event or onComplete? (to hide and show cursor for example)
+
 - console - think about a better way to inject dependencies for commands (DI Component?)
 
 - proper tests for VarnishTestCommand and E2ETestCommand
 
 - improve or replace E2eException
-
-- ApiClientFactory test - check if guzzle client config is testable
 
 - ApiClient::call() - manage debug option (instead of having it commented out)
 
