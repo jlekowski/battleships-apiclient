@@ -53,6 +53,7 @@ class VarnishTestCommand extends ApiClientAwareCommand
     {
         $stopwatch = new Stopwatch();
         $stopwatch->start('execute');
+
         $baseUri = $input->getArgument('uri');
         $apiVersion = (int)$input->getArgument('version');
 
