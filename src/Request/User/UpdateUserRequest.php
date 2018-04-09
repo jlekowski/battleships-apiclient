@@ -8,7 +8,7 @@ class UpdateUserRequest extends ApiRequest
 {
     /**
      * @param int $userId
-     * @return $this|UpdateUserRequest
+     * @return $this
      */
     public function setUserId(int $userId): self
     {
@@ -17,7 +17,7 @@ class UpdateUserRequest extends ApiRequest
 
     /**
      * @param string $name
-     * @return $this|UpdateUserRequest
+     * @return $this
      */
     public function setUserName(string $name): self
     {

@@ -9,7 +9,7 @@ class GetEventsRequest extends ApiRequest
 {
     /**
      * @param int $gameId
-     * @return $this|GetEventsRequest
+     * @return $this
      */
     public function setGameId(int $gameId): self
     {
@@ -18,7 +18,7 @@ class GetEventsRequest extends ApiRequest
 
     /**
      * @param int $gt
-     * @return $this|GetEventsRequest
+     * @return $this
      */
     public function setGt(int $gt): self
     {
@@ -27,7 +27,7 @@ class GetEventsRequest extends ApiRequest
 
     /**
      * @param string $type
-     * @return $this|GetEventsRequest
+     * @return $this
      */
     public function setType(string $type): self
     {
@@ -36,7 +36,7 @@ class GetEventsRequest extends ApiRequest
 
     /**
      * @param int $player
-     * @return $this|GetEventsRequest
+     * @return $this
      */
     public function setPlayer(int $player): self
     {

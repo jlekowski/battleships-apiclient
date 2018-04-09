@@ -70,7 +70,7 @@ class ApiRequest
 
     /**
      * @param string $uri
-     * @return $this|ApiRequest
+     * @return $this
      */
     public function setUri(string $uri): self
     {
@@ -89,7 +89,7 @@ class ApiRequest
 
     /**
      * @param string $method
-     * @return $this|ApiRequest
+     * @return $this
      */
     public function setHttpMethod(string $method): self
     {
@@ -108,7 +108,7 @@ class ApiRequest
 
     /**
      * @param mixed $data
-     * @return $this|ApiRequest
+     * @return $this
      * @throws \InvalidArgumentException
      */
     public function setData($data): self
@@ -133,7 +133,7 @@ class ApiRequest
 
     /**
      * @param string|null $apiKey
-     * @return $this|ApiRequest
+     * @return $this
      */
     public function setApiKey(string $apiKey = null): self
     {
@@ -142,7 +142,7 @@ class ApiRequest
 
     /**
      * @param int $apiVersion
-     * @return $this|ApiRequest
+     * @return $this
      */
     public function setApiVersion(int $apiVersion): self
     {
@@ -151,7 +151,7 @@ class ApiRequest
 
     /**
      * Resolve provided options
-     * @return $this|ApiRequest
+     * @return $this
      * @throws ExceptionInterface
      */
     public function resolve(): self
@@ -186,7 +186,7 @@ class ApiRequest
     /**
      * @param string $key
      * @param mixed $value
-     * @return $this|ApiRequest
+     * @return $this
      * @throws \InvalidArgumentException
      */
     protected function set(string $key, $value): self
@@ -205,7 +205,7 @@ class ApiRequest
     /**
      * @param string $key
      * @param mixed $value
-     * @return $this|ApiRequest
+     * @return $this
      * @throws \InvalidArgumentException
      */
     protected function add(string $key, $value): self

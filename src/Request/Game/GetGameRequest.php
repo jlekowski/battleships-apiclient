@@ -8,7 +8,7 @@ class GetGameRequest extends ApiRequest
 {
     /**
      * @param int $gameId
-     * @return $this|GetGameRequest
+     * @return $this
      */
     public function setGameId(int $gameId): self
     {

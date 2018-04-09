@@ -81,7 +81,7 @@ class ApiClient
 
     /**
      * @param string|null $baseUri
-     * @return $this|ApiClient
+     * @return $this
      */
     public function setBaseUri(string $baseUri = null): self
     {

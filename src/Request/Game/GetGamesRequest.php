@@ -8,7 +8,7 @@ class GetGamesRequest extends ApiRequest
 {
     /**
      * @param bool $available
-     * @return $this|GetGamesRequest
+     * @return $this
      */
     public function setAvailable(bool $available): self
     {

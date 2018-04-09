@@ -8,7 +8,7 @@ class CreateUserRequest extends ApiRequest
 {
     /**
      * @param string $name
-     * @return $this|CreateUserRequest
+     * @return $this
      */
     public function setUserName(string $name): self
     {

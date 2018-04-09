@@ -9,7 +9,7 @@ class CreateEventRequest extends ApiRequest
 {
     /**
      * @param int $gameId
-     * @return $this|CreateEventRequest
+     * @return $this
      */
     public function setGameId(int $gameId): self
     {
@@ -18,7 +18,7 @@ class CreateEventRequest extends ApiRequest
 
     /**
      * @param string $eventType
-     * @return $this|CreateEventRequest
+     * @return $this
      */
     public function setEventType(string $eventType): self
     {
@@ -27,7 +27,7 @@ class CreateEventRequest extends ApiRequest
 
     /**
      * @param mixed $eventType
-     * @return $this|CreateEventRequest
+     * @return $this
      */
     public function setEventValue($eventType): self
     {

@@ -28,7 +28,7 @@ class RequestConfigListener
 
     /**
      * @param int $apiVersion
-     * @return $this|RequestConfigListener
+     * @return $this
      */
     public function setApiVersion(int $apiVersion): self
     {
@@ -39,7 +39,7 @@ class RequestConfigListener
 
     /**
      * @param string|null $apiKey
-     * @return $this|RequestConfigListener
+     * @return $this
      */
     public function setApiKey(string $apiKey = null): self
     {

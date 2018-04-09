@@ -8,7 +8,7 @@ class GetUserRequest extends ApiRequest
 {
     /**
      * @param int $userId
-     * @return $this|GetUserRequest
+     * @return $this
      */
     public function setUserId(int $userId): self
     {
