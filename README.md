@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jlekowski/battleships-apiclient.svg?branch=develop)](https://travis-ci.org/jlekowski/battleships-apiclient)
+[![Build Status](https://travis-ci.org/jlekowski/battleships-apiclient.svg?branch=master)](https://travis-ci.org/jlekowski/battleships-apiclient)
 [![SensioLabsInsight](https://insight.sensiolabs.com/projects/73cc6cc3-4028-4dde-abcd-41e66dd6f328/mini.png)](https://insight.sensiolabs.com/projects/73cc6cc3-4028-4dde-abcd-41e66dd6f328)
 
 # Battleships (PHP Client library)
