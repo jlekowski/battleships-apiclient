@@ -87,5 +87,9 @@ $userDetails = $response->getJson();
 
 ## === Changelog ===
 
+* version **1.1**
+  * Update* request classes start now with Edit* (**backward incompatibility**)
+  * ApiRequest class knows subclass's HTTP method, and offers better support for queries and data
+  * `composer` accepts Symfony4 components
 * version **1.0**
  * Working version of the PHP Client library deployed
