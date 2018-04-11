@@ -9,8 +9,13 @@ before_install:
   - composer self-update
 
 install:
-  - composer install
+  - composer update $COMPOSER_FLAGS --prefer-stable
 
 script:
   - bin/phpunit
   - bin/phpcs -p --standard=PSR2 --exclude=Generic.Files.LineLength src/ tests/
+
+matrix:
+  include:
+    - php: 7.0
+      env: COMPOSER_FLAGS="--prefer-lowest"
