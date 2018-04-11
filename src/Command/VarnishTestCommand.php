@@ -26,7 +26,7 @@ class VarnishTestCommand extends ApiClientAwareCommand
     const VARNISH_DEBUG_HIT = 'HIT';
     const VARNISH_DEBUG_MISS = 'MISS';
     // 100ms to prevent calling Varnish before cache is cleared (happens on VMs with no network latency)
-    const VARNISH_RACE_CONDITION_SLEEP = 100000;
+    const VARNISH_INVALIDATION_LAG_SLEEP = 100000;
 
     /**
      * @var bool
@@ -172,7 +172,7 @@ class VarnishTestCommand extends ApiClientAwareCommand
         $response = $this->apiClient->call($request);
 
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
-        usleep(self::VARNISH_RACE_CONDITION_SLEEP);
+        usleep(self::VARNISH_INVALIDATION_LAG_SLEEP);
 
 
         // Get available games
@@ -291,7 +291,7 @@ class VarnishTestCommand extends ApiClientAwareCommand
         ;
         $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
-        usleep(self::VARNISH_RACE_CONDITION_SLEEP);
+        usleep(self::VARNISH_INVALIDATION_LAG_SLEEP);
 
 
         // Get all events

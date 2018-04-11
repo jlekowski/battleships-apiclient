@@ -52,7 +52,8 @@ class ApiRequest
             })
             ->setNormalizer('uri', function (Options $options, $value) {
                 // if full URL set, use it - otherwise concatenate API version with it
-                return filter_var($value, FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED) ?: sprintf('/v%d%s', $options['apiVersion'], $value);
+                return filter_var($value, FILTER_VALIDATE_URL, FILTER_FLAG_SCHEME_REQUIRED)
+                    ?: sprintf('/v%d%s', $options['apiVersion'], $value);
             })
         ;
         $this->configure();
