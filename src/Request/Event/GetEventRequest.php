@@ -3,17 +3,28 @@
 namespace BattleshipsApi\Client\Request\Event;
 
 use BattleshipsApi\Client\Request\ApiRequest;
-use Symfony\Component\OptionsResolver\Options;
 
 class GetEventRequest extends ApiRequest
 {
+    /**
+     * @var int|null
+     */
+    private $gameId;
+
+    /**
+     * @var int|null
+     */
+    private $eventId;
+
     /**
      * @param int $gameId
      * @return $this
      */
     public function setGameId(int $gameId): self
     {
-        return $this->set('gameId', $gameId);
+        $this->gameId = $gameId;
+
+        return $this->configureUri();
     }
 
     /**
@@ -22,21 +33,20 @@ class GetEventRequest extends ApiRequest
      */
     public function setEventId(int $eventId): self
     {
-        return $this->set('eventId', $eventId);
+        $this->eventId = $eventId;
+
+        return $this->configureUri();
     }
 
     /**
-     * @inheritdoc
+     * @return $this
      */
-    protected function configure()
+    private function configureUri(): self
     {
-        $this
-            ->set('httpMethod', 'GET')
-            ->resolver
-                ->setRequired(['gameId', 'eventId'])
-                ->setDefault('uri', function (Options $options) {
-                    return sprintf('/games/%d/events/%d', $options['gameId'], $options['eventId']);
-                })
-        ;
+        if ($this->gameId && $this->eventId) {
+            $this->setUri(sprintf('/games/%d/events/%d', $this->gameId, $this->eventId));
+        }
+
+        return $this;
     }
 }

@@ -6,13 +6,15 @@ use BattleshipsApi\Client\Request\ApiRequest;
 
 class CreateUserRequest extends ApiRequest
 {
+    /* protected */ const DATA = ['name'];
+
     /**
      * @param string $name
      * @return $this
      */
     public function setUserName(string $name): self
     {
-        return $this->set('requestData', ['name' => $name]);
+        return $this->setDataParam('name', $name);
     }
 
     /**
@@ -21,11 +23,8 @@ class CreateUserRequest extends ApiRequest
     protected function configure()
     {
         $this
-            ->set('uri', '/users')
-            ->set('httpMethod', 'POST')
-            ->set('apiKey', null)
-            ->resolver
-                ->setRequired('requestData')
+            ->setUri('/users')
+            ->setApiKey(null)
         ;
     }
 }

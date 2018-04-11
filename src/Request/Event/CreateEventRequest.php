@@ -3,17 +3,18 @@
 namespace BattleshipsApi\Client\Request\Event;
 
 use BattleshipsApi\Client\Request\ApiRequest;
-use Symfony\Component\OptionsResolver\Options;
 
 class CreateEventRequest extends ApiRequest
 {
+    /* protected */ const DATA = ['type', 'value'];
+
     /**
      * @param int $gameId
      * @return $this
      */
     public function setGameId(int $gameId): self
     {
-        return $this->set('uri', sprintf('/games/%d/events', $gameId));
+        return $this->setUri(sprintf('/games/%d/events', $gameId));
     }
 
     /**
@@ -22,7 +23,7 @@ class CreateEventRequest extends ApiRequest
      */
     public function setEventType(string $eventType): self
     {
-        return $this->set('eventType', $eventType);
+        return $this->setDataParam('type', $eventType);
     }
 
     /**
@@ -31,7 +32,7 @@ class CreateEventRequest extends ApiRequest
      */
     public function setEventValue($eventType): self
     {
-        return $this->set('eventValue', $eventType);
+        return $this->setDataParam('value', $eventType);
     }
 
     /**
@@ -40,13 +41,8 @@ class CreateEventRequest extends ApiRequest
     protected function configure()
     {
         $this
-            ->set('httpMethod', 'POST')
-            ->resolver
-                ->setRequired(['eventType', 'eventValue'])
-//                ->setAllowedValues('eventType', ['chat', 'shot', 'join_game', 'start_game', 'name_update', 'new_game'])
-                ->setDefault('requestData', function (Options $options) {
-                    return ['type' => $options['eventType'], 'value' => $options['eventValue']];
-                })
+            ->dataResolver
+                ->setAllowedValues('type', array_values(EventTypes::TYPES))
         ;
     }
 }

@@ -14,10 +14,10 @@ use BattleshipsApi\Client\Request\Event\GetEventsRequest;
 use BattleshipsApi\Client\Request\Game\CreateGameRequest;
 use BattleshipsApi\Client\Request\Game\GetGameRequest;
 use BattleshipsApi\Client\Request\Game\GetGamesRequest;
-use BattleshipsApi\Client\Request\Game\UpdateGameRequest;
+use BattleshipsApi\Client\Request\Game\EditGameRequest;
 use BattleshipsApi\Client\Request\User\CreateUserRequest;
 use BattleshipsApi\Client\Request\User\GetUserRequest;
-use BattleshipsApi\Client\Request\User\UpdateUserRequest;
+use BattleshipsApi\Client\Request\User\EditUserRequest;
 use BattleshipsApi\Client\Response\ApiResponse;
 use BattleshipsApi\Client\Subscriber\LogSubscriber;
 use Symfony\Component\Console\Input\InputArgument;
@@ -38,6 +38,8 @@ class E2ETestCommand extends ApiClientAwareCommand
             ->setDescription('Runs E2E test')
             ->addArgument('uri', InputArgument::OPTIONAL, 'API base uri', 'http://battleships-api.dev.lekowski.pl:6081')
             ->addArgument('version', InputArgument::OPTIONAL, 'API version', 1)
+            ->addUsage('http://battleships-api.vagrant')
+            ->addUsage('http://battleships-api.dev.lekowski.pl:6081 1 -vv')
         ;
     }
 
@@ -98,7 +100,7 @@ class E2ETestCommand extends ApiClientAwareCommand
         $this->outputResponse($output, $response);
 
         // update user
-        $request = new UpdateUserRequest();
+        $request = new EditUserRequest();
         $request
             ->setUserId($userId)
             ->setUserName('New Player 132')
@@ -116,7 +118,7 @@ class E2ETestCommand extends ApiClientAwareCommand
         $this->outputResponse($output, $response);
 
         // update game
-        $request = new UpdateGameRequest();
+        $request = new EditGameRequest();
         $request
             ->setGameId($gameId)
             ->setPlayerShips(['A1','C2','D2','F2','H2','J2','F5','F6','I6','J6','A7','B7','C7','F7','F8','I9','J9','E10','F10','G10'])
@@ -131,7 +133,7 @@ class E2ETestCommand extends ApiClientAwareCommand
         $request = new CreateEventRequest();
         $request
             ->setGameId($gameId)
-            ->setEventType(EventTypes::EVENT_TYPE_CHAT)
+            ->setEventType(EventTypes::TYPES['CHAT'])
             ->setEventValue('Test chat')
         ;
         $response = $this->apiClient->call($request);
@@ -175,7 +177,7 @@ class E2ETestCommand extends ApiClientAwareCommand
 
         // update game
         $output->writeln('Game to be Patched (other join)');
-        $request = new UpdateGameRequest();
+        $request = new EditGameRequest();
         $request
             ->setGameId($gameId)
             ->setJoinGame(true)
@@ -195,7 +197,7 @@ class E2ETestCommand extends ApiClientAwareCommand
 
         // update game
         $output->writeln('Game to be Patched (other ships)');
-        $request = new UpdateGameRequest();
+        $request = new EditGameRequest();
         $request
             ->setGameId($gameId)
             ->setPlayerShips(['A1','E1','A2','D3','E3','F3','J3','H4','J4','A5','B5','C5','D5','J5','H6','B9','E9','F9','B10','H10'])
@@ -211,7 +213,7 @@ class E2ETestCommand extends ApiClientAwareCommand
         $request = new CreateEventRequest();
         $request
             ->setGameId($gameId)
-            ->setEventType(EventTypes::EVENT_TYPE_SHOT)
+            ->setEventType(EventTypes::TYPES['SHOT'])
             ->setEventValue('B10')
         ;
         $response = $this->apiClient->call($request);
@@ -232,7 +234,7 @@ class E2ETestCommand extends ApiClientAwareCommand
         $request
             ->setGameId($gameId)
             ->setGt(0)
-            ->setType(EventTypes::EVENT_TYPE_SHOT)
+            ->setType(EventTypes::TYPES['SHOT'])
         ;
         $response = $this->apiClient->call($request);
         $this->outputResponse($output, $response);

@@ -12,8 +12,7 @@ class CreateGameRequest extends ApiRequest
     protected function configure()
     {
         $this
-            ->set('uri', '/games')
-            ->set('httpMethod', 'POST')
+            ->setUri('/games')
         ;
     }
 }

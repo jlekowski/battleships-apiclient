@@ -26,11 +26,20 @@ class GetEventsRequestTest extends TestCase
 
     /**
      * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
-     * @expectedExceptionMessage The required option "gameId" is missing.
+     * @expectedExceptionMessage The required option "uri" is missing.
      */
     public function testResolveThrowsExceptionOnMissingGameId()
     {
         $this->apiRequest->setApiKey('testKey')->resolve();
+    }
+
+    /**
+     * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
+     * @expectedExceptionMessage The option "type" with value "test-event" is invalid. Accepted values are:
+     */
+    public function testResolveThrowsExceptionOnIncorrectEventType()
+    {
+        $this->apiRequest->setApiKey('testKey')->setGameId(12)->setType('test-event')->resolve();
     }
 
     /**
@@ -55,12 +64,12 @@ class GetEventsRequestTest extends TestCase
     public function testSettingRequest()
     {
         // set required options and resolve
-        $this->apiRequest->setApiKey('testKey')->setGameId(12)->setType(EventTypes::EVENT_TYPE_SHOT)->setPlayer(2)->setGt(9)->resolve();
+        $this->apiRequest->setApiKey('testKey')->setGameId(12)->setType(EventTypes::TYPES['SHOT'])->setPlayer(2)->setGt(9)->resolve();
 
         // check http method
         $this->assertEquals('GET', $this->apiRequest->getHttpMethod());
         // check uri
-        $this->assertEquals(sprintf('/v1/games/12/events?gt=9&type=%s&player=2', EventTypes::EVENT_TYPE_SHOT), $this->apiRequest->getUri());
+        $this->assertEquals(sprintf('/v1/games/12/events?gt=9&type=%s&player=2', EventTypes::TYPES['SHOT']), $this->apiRequest->getUri());
         // check headers
         $this->assertEquals(['Authorization' => 'Bearer testKey'], $this->apiRequest->getHeaders());
         // check data

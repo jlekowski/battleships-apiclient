@@ -25,7 +25,7 @@ class GetGamesRequestTest extends TestCase
 
     /**
      * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
-     * @expectedExceptionMessage The required option "uri" is missing.
+     * @expectedExceptionMessage The required option "available" is missing.
      */
     public function testResolveThrowsExceptionOnMissingAvailable()
     {

@@ -27,12 +27,140 @@ class ApiRequestTest extends TestCase
 
         // returns set uri normalized using default api version
         $this->assertEquals('/v1/testUri', $this->apiRequest->getUri());
+    }
+
+    public function testNormalizeUriWithVersion()
+    {
+        // set required options + version and resolve
+        $this->apiRequest->setUri('/testUri')->setHttpMethod('GET')->setApiVersion(2)->setApiKey(null)->resolve();
 
         // returns set uri normalized using api version 2
-        $this->assertEquals('/v2/testUri', $this->apiRequest->setApiVersion(2)->resolve()->getUri());
+        $this->assertEquals('/v2/testUri', $this->apiRequest->getUri());
+    }
+
+    public function testNormalizeUriWithQueryParams()
+    {
+        // set required options + query and resolve
+        $this->apiRequest->setUri('/testUri')->setHttpMethod('GET')->setApiKey(null)->setQueryParams(['a' => 1, 'hash' => '12#'])->resolve();
+
+        // returns set uri normalized with url encoded query
+        $this->assertEquals('/v1/testUri?a=1&hash=12%23', $this->apiRequest->getUri());
+    }
+
+    public function testNormalizeUriFullPath()
+    {
+        // set required options + service name and resolve
+        $this->apiRequest->setUri('http://testUri')->setHttpMethod('GET')->setApiKey(null)->resolve();
 
         // returns url if full was set
-        $this->assertEquals('http://testUri', $this->apiRequest->setUri('http://testUri')->resolve()->getUri());
+        $this->assertEquals('http://testUri', $this->apiRequest->getUri());
+    }
+
+    public function testNormalizeUriWithQueryFromChildClass()
+    {
+        $apiRequest = new class() extends ApiRequest {
+            /* protected */ const QUERY = ['a', 'b'];
+
+            protected function configure()/* : void */
+            {
+                $this->setQueryParam('a', 1)->setQueryParam('b', '&');
+            }
+        };
+
+        // set required options + service name and resolve
+        $apiRequest->setUri('/testUri')->setHttpMethod('GET')->setApiKey(null)->resolve();
+
+        // returns url with GET params
+        $this->assertEquals('/v1/testUri?a=1&b=%26', $apiRequest->getUri());
+    }
+
+    public function testNormalizeUriSetQueryParamsTakesPrecedenceOverQueryFromChildClass()
+    {
+        $apiRequest = new class() extends ApiRequest {
+            /* protected */ const QUERY = ['a', 'b'];
+
+            protected function configure()/* : void */
+            {
+                $this->setQueryParam('a', 1)->setQueryParam('b', 2);
+            }
+        };
+
+        // set required options + query and resolve
+        $apiRequest->setUri('/testUri')->setHttpMethod('GET')->setApiKey(null)->setQueryParams(['c' => 3, 'd' => 4])->resolve();
+
+        // returns url with GET params
+        $this->assertEquals('/v1/testUri?c=3&d=4', $apiRequest->getUri());
+    }
+
+    public function testNormalizeDataFromChildClassDefaultRequired()
+    {
+        $apiRequest = new class() extends ApiRequest {
+            /* protected */ const DATA = ['a', 'b'];
+
+            protected function configure()/* : void */
+            {
+                $this->setDataParam('a', 1)->setDataParam('b', 2);
+            }
+        };
+
+        // set required options + service name and resolve
+        $apiRequest->setUri('/testUri')->setHttpMethod('POST')->setApiKey(null)->resolve();
+
+        $this->assertEquals(['a' => 1, 'b' => 2], $apiRequest->getData());
+    }
+
+    public function testNormalizeDataFromChildClassRequiredOnly()
+    {
+        $apiRequest = new class() extends ApiRequest {
+            /* protected */ const DATA = ['required' => ['a', 'b']];
+
+            protected function configure()/* : void */
+            {
+                $this->setDataParam('a', 1)->setDataParam('b', 2);
+            }
+        };
+
+        // set required options + service name and resolve
+        $apiRequest->setUri('/testUri')->setHttpMethod('POST')->setApiKey(null)->resolve();
+
+        $this->assertEquals(['a' => 1, 'b' => 2], $apiRequest->getData());
+    }
+
+    public function testNormalizeDataFromChildClassDefinedOnly()
+    {
+        $apiRequest = new class() extends ApiRequest {
+            /* protected */ const DATA = ['defined' => ['a', 'b']];
+
+            protected function configure()/* : void */
+            {
+                $this->setDataParam('a', 1);
+            }
+        };
+
+        // set required options + service name and resolve
+        $apiRequest->setUri('/testUri')->setHttpMethod('POST')->setApiKey(null)->resolve();
+
+        $this->assertEquals(['a' => 1], $apiRequest->getData());
+    }
+
+    public function testNormalizeDataFromChildClassRequiredAndDefined()
+    {
+        $apiRequest = new class() extends ApiRequest {
+            /* protected */ const DATA = [
+                'required' => ['a', 'b'],
+                'defined' => ['c', 'd']
+            ];
+
+            protected function configure()/* : void */
+            {
+                $this->setDataParam('a', 1)->setDataParam('b', 2)->setDataParam('d', 4);
+            }
+        };
+
+        // set required options + service name and resolve
+        $apiRequest->setUri('/testUri')->setHttpMethod('POST')->setApiKey(null)->resolve();
+
+        $this->assertEquals(['a' => 1, 'b' => 2, 'd' => 4], $apiRequest->getData());
     }
 
     /**
@@ -120,6 +248,15 @@ class ApiRequestTest extends TestCase
         $this->apiRequest->setData('{1');
     }
 
+    /**
+     * @see testNormalizeUriWithQueryParams shows the default value and uri changes when setting a different service name
+     */
+    public function testSetQueryParams()
+    {
+        // returns itself
+        $this->assertEquals($this->apiRequest, $this->apiRequest->setQueryParams(['a' => 1, 'b' => 2]));
+    }
+
     public function testGetHeaders()
     {
         // set required options and resolve
@@ -132,6 +269,9 @@ class ApiRequestTest extends TestCase
         $this->assertEquals(['Authorization' => 'Bearer testKey'], $this->apiRequest->setApiKey('testKey')->resolve()->getHeaders());
     }
 
+    /**
+     * @see testGetHeaders shows how it sets Authorization header
+     */
     public function testSetApiKey()
     {
         // returns itself when setting string
@@ -139,16 +279,15 @@ class ApiRequestTest extends TestCase
 
         // returns itself when setting null
         $this->assertEquals($this->apiRequest, $this->apiRequest->setApiKey(null));
-
-        // testGetHeaders shows it is set in Authorization header
     }
 
+    /**
+     * @see testNormalizeUriWithVersion shows the default value and uri changes when setting a different version
+     */
     public function testSetApiVersion()
     {
         // returns itself when setting string
         $this->assertEquals($this->apiRequest, $this->apiRequest->setApiVersion(2));
-
-        // testGetSetUri shows the default value and uri changes when setting a different version
     }
 
     public function testSetApiKeyMakesRequestNotResolved()
@@ -181,7 +320,7 @@ class ApiRequestTest extends TestCase
 
     /**
      * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
-     * @expectedExceptionMessage The required option "httpMethod" is missing.
+     * @expectedExceptionMessage The option "httpMethod" with value null is invalid. Accepted values are:
      */
     public function testResolveThrowsExceptionOnMissingHttpMethod()
     {
@@ -195,5 +334,37 @@ class ApiRequestTest extends TestCase
     public function testResolveThrowsExceptionOnInvalidHttpMethod()
     {
         $this->apiRequest->setUri('/testUri')->setApiKey(null)->setHttpMethod('TEST')->resolve();
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Query config option `b` does not exist
+     */
+    public function testChildClassSettingUndefinedQueryParamThrowsException()
+    {
+        new class() extends ApiRequest {
+            /* protected */ const QUERY = ['a'];
+
+            protected function configure()/* : void */
+            {
+                $this->setQueryParam('a', 1)->setQueryParam('b', 2);
+            }
+        };
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     * @expectedExceptionMessage Data config option `b` does not exist
+     */
+    public function testChildClassSettingUndefinedDataParamThrowsException()
+    {
+        new class() extends ApiRequest {
+            /* protected */ const DATA = ['a'];
+
+            protected function configure()/* : void */
+            {
+                $this->setDataParam('a', 1)->setDataParam('b', 2);
+            }
+        };
     }
 }

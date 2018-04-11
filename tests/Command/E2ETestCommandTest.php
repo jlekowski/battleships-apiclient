@@ -4,6 +4,8 @@ namespace Tests\Command;
 
 use BattleshipsApi\Client\Client\ApiClient;
 use BattleshipsApi\Client\Command\E2ETestCommand;
+use BattleshipsApi\Client\Event\ApiClientEvents;
+use BattleshipsApi\Client\Event\PostRequestEvent;
 use BattleshipsApi\Client\Request\ApiRequest;
 use BattleshipsApi\Client\Response\ApiResponse;
 use PHPUnit\Framework\TestCase;
@@ -93,5 +95,203 @@ Shot added
 Game for player
 Finished in %f";
         $this->assertStringMatchesFormat($expectedOutput, $this->commandTester->getDisplay());
+    }
+
+    public function testExecuteSetsPostRequestListener()
+    {
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $event = $this->prophesize(PostRequestEvent::class);
+        $request = $this->prophesize(ApiRequest::class);
+        $response = $this->prophesize(ResponseInterface::class);
+        $apiResponse = $this->prophesize(ApiResponse::class);
+
+
+        $event->getRequest()->willReturn($request);
+        $event->getResponse()->willReturn($apiResponse);
+
+        $response->getStatusCode()->willReturn(204);
+
+        $request->getHttpMethod()->willReturn('PATCH');
+
+        $apiResponse->getResponse()->willReturn($response);
+        $apiResponse->getJson()->willReturn([]);
+        $apiResponse->getHeaders()->willReturn([]);
+        $apiResponse->getNewId()->willReturn(999);
+        $apiResponse->getHeader(Argument::type('string'))->willReturn('test-header-value');
+
+        $this->apiClient->getDispatcher()->willReturn($eventDispatcher);
+        $this->apiClient->setBaseUri('http://battleships-api.test:8080')->willReturn($this->apiClient);
+        $this->apiClient->call(Argument::type(ApiRequest::class))->willReturn($apiResponse);
+
+
+        $eventDispatcher->addSubscriber(Argument::cetera())->shouldBeCalled();
+        $eventDispatcher->addListener(Argument::cetera())->shouldBeCalled();
+        $eventDispatcher->addListener(ApiClientEvents::POST_REQUEST, Argument::that(function ($value) use ($event) {
+            if (!($value instanceof \Closure)) {
+                return false;
+            }
+            $value($event->reveal());
+            return true;
+        }))->shouldBeCalled();
+
+
+        $this->commandTester->execute([
+            'command' => $this->command->getName(),
+            'uri' => 'http://battleships-api.test:8080',
+            'version' => 22
+        ]);
+    }
+
+    public function testExecutePostRequestResponseVerification()
+    {
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $event = $this->prophesize(PostRequestEvent::class);
+        $request = $this->prophesize(ApiRequest::class);
+        $response = $this->prophesize(ResponseInterface::class);
+        $apiResponse = $this->prophesize(ApiResponse::class);
+
+
+        $event->getRequest()->willReturn($request);
+        $event->getResponse()->willReturn($apiResponse);
+
+        $response->getStatusCode()->willReturn(201);
+        $response->getHeader('Content-Type')->willReturn(['application/json']);
+
+        $request->getHttpMethod()->willReturn('POST');
+
+        $apiResponse->getResponse()->willReturn($response);
+        $apiResponse->getJson()->willReturn([]);
+        $apiResponse->getHeaders()->willReturn([]);
+        $apiResponse->getNewId()->willReturn(999);
+        $apiResponse->getHeader(Argument::type('string'))->willReturn('test-header-value');
+
+        $this->apiClient->getDispatcher()->willReturn($eventDispatcher);
+        $this->apiClient->setBaseUri('http://battleships-api.test:8080')->willReturn($this->apiClient);
+        $this->apiClient->call(Argument::type(ApiRequest::class))->willReturn($apiResponse);
+
+
+        $eventDispatcher->addSubscriber(Argument::cetera())->shouldBeCalled();
+        $eventDispatcher->addListener(Argument::cetera())->shouldBeCalled();
+        $eventDispatcher->addListener(ApiClientEvents::POST_REQUEST, Argument::that(function ($value) use ($event) {
+            if (!($value instanceof \Closure)) {
+                return false;
+            }
+            $value($event->reveal());
+            return true;
+        }))->shouldBeCalled();
+
+
+        $this->commandTester->execute([
+            'command' => $this->command->getName(),
+            'uri' => 'http://battleships-api.test:8080',
+            'version' => 22
+        ]);
+    }
+
+    public function testExecuteThrowsExceptionWhenMissingApplicationJsonHeader()
+    {
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $event = $this->prophesize(PostRequestEvent::class);
+        $request = $this->prophesize(ApiRequest::class);
+        $response = $this->prophesize(ResponseInterface::class);
+        $apiResponse = $this->prophesize(ApiResponse::class);
+
+
+        $event->getRequest()->willReturn($request);
+        $event->getResponse()->willReturn($apiResponse);
+
+        $response->getStatusCode()->willReturn(200);
+        $response->getHeader('Content-Type')->willReturn(['non-application/json']);
+        $response->getBody()->willReturn('error');
+
+        $request->getHttpMethod()->willReturn('GET');
+        $request->getUri()->willReturn('http://uri');
+
+        $apiResponse->getResponse()->willReturn($response);
+        $apiResponse->getJson()->willReturn([]);
+        $apiResponse->getHeaders()->willReturn([]);
+        $apiResponse->getNewId()->willReturn(999);
+        $apiResponse->getHeader(Argument::type('string'))->willReturn('test-header-value');
+
+        $this->apiClient->getDispatcher()->willReturn($eventDispatcher);
+        $this->apiClient->setBaseUri('http://battleships-api.test:8080')->willReturn($this->apiClient);
+        $this->apiClient->call(Argument::type(ApiRequest::class))->willReturn($apiResponse);
+
+
+        $eventDispatcher->addSubscriber(Argument::cetera())->shouldBeCalled();
+        $eventDispatcher->addListener(Argument::cetera())->shouldBeCalled();
+        $eventDispatcher->addListener(ApiClientEvents::POST_REQUEST, Argument::that(function ($value) use ($event) {
+            if (!($value instanceof \Closure)) {
+                return false;
+            }
+            try {
+                $value($event->reveal());
+            } catch (\Exception $e) {
+                // can't catch exception for the whole test, so need to assert here
+                $this->assertStringStartsWith('Incorrect content type returned', $e->getMessage());
+                return true;
+            }
+            return true;
+        }))->shouldBeCalled();
+
+
+        $this->commandTester->execute([
+            'command' => $this->command->getName(),
+            'uri' => 'http://battleships-api.test:8080',
+            'version' => 22
+        ]);
+    }
+
+    public function testExecuteThrowsExceptionOnUnexpectedHttpCode()
+    {
+        $eventDispatcher = $this->prophesize(EventDispatcherInterface::class);
+        $event = $this->prophesize(PostRequestEvent::class);
+        $request = $this->prophesize(ApiRequest::class);
+        $response = $this->prophesize(ResponseInterface::class);
+        $apiResponse = $this->prophesize(ApiResponse::class);
+
+
+        $event->getRequest()->willReturn($request);
+        $event->getResponse()->willReturn($apiResponse);
+
+        $response->getStatusCode()->willReturn(201);
+        $response->getHeader('Content-Type')->willReturn(['application/json']);
+
+        $request->getHttpMethod()->willReturn('GET');
+        $request->getUri()->willReturn('http://uri');
+
+        $apiResponse->getResponse()->willReturn($response);
+        $apiResponse->getJson()->willReturn([]);
+        $apiResponse->getHeaders()->willReturn([]);
+        $apiResponse->getNewId()->willReturn(999);
+        $apiResponse->getHeader(Argument::type('string'))->willReturn('test-header-value');
+
+        $this->apiClient->getDispatcher()->willReturn($eventDispatcher);
+        $this->apiClient->setBaseUri('http://battleships-api.test:8080')->willReturn($this->apiClient);
+        $this->apiClient->call(Argument::type(ApiRequest::class))->willReturn($apiResponse);
+
+
+        $eventDispatcher->addSubscriber(Argument::cetera())->shouldBeCalled();
+        $eventDispatcher->addListener(Argument::cetera())->shouldBeCalled();
+        $eventDispatcher->addListener(ApiClientEvents::POST_REQUEST, Argument::that(function ($value) use ($event) {
+            if (!($value instanceof \Closure)) {
+                return false;
+            }
+            try {
+                $value($event->reveal());
+            } catch (\Exception $e) {
+                // can't catch exception for the whole test, so need to assert here
+                $this->assertStringStartsWith('Incorrect http code', $e->getMessage());
+                return true;
+            }
+            return true;
+        }))->shouldBeCalled();
+
+
+        $this->commandTester->execute([
+            'command' => $this->command->getName(),
+            'uri' => 'http://battleships-api.test:8080',
+            'version' => 22
+        ]);
     }
 }

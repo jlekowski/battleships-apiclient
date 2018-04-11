@@ -12,14 +12,6 @@ class GetGameRequest extends ApiRequest
      */
     public function setGameId(int $gameId): self
     {
-        return $this->set('uri', sprintf('/games/%d', $gameId));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function configure()
-    {
-        $this->set('httpMethod', 'GET');
+        return $this->setUri(sprintf('/games/%d', $gameId));
     }
 }

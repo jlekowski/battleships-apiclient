@@ -2,19 +2,19 @@
 
 namespace Tests\Request\Game;
 
-use BattleshipsApi\Client\Request\Game\UpdateGameRequest;
+use BattleshipsApi\Client\Request\Game\EditGameRequest;
 use PHPUnit\Framework\TestCase;
 
-class UpdateGameRequestTest extends TestCase
+class EditGameRequestTest extends TestCase
 {
     /**
-     * @var UpdateGameRequest
+     * @var EditGameRequest
      */
     protected $apiRequest;
 
     public function setUp()
     {
-        $this->apiRequest = new UpdateGameRequest();
+        $this->apiRequest = new EditGameRequest();
     }
 
     public function testSetGameId()
@@ -110,5 +110,23 @@ class UpdateGameRequestTest extends TestCase
         $this->assertEquals(['Authorization' => 'Bearer testKey'], $this->apiRequest->getHeaders());
         // check data
         $this->assertEquals(['joinGame' => true, 'playerShips' => $playerShips], $this->apiRequest->getData());
+    }
+
+    public function testSettingRequestJoinGame()
+    {
+        $this->apiRequest->setApiKey('testKey')->setJoinGame(true)->setGameId(12)->resolve();
+
+        // check data
+        $this->assertEquals(['joinGame' => true], $this->apiRequest->getData());
+    }
+
+    public function testSettingRequestSetShips()
+    {
+        // set required options and resolve
+        $playerShips = ['A1','E1','A2','D3','E3','F3','J3','H4','J4','A5','B5','C5','D5','J5','H6','B9','E9','F9','B10','H10'];
+        $this->apiRequest->setApiKey('testKey')->setPlayerShips($playerShips)->setGameId(12)->resolve();
+
+        // check data
+        $this->assertEquals(['playerShips' => $playerShips], $this->apiRequest->getData());
     }
 }

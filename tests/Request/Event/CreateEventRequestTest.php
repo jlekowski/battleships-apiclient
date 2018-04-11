@@ -27,7 +27,7 @@ class CreateEventRequestTest extends TestCase
     public function testSetEventType()
     {
         // returns itself
-        $this->assertEquals($this->apiRequest, $this->apiRequest->setEventType(EventTypes::EVENT_TYPE_CHAT));
+        $this->assertEquals($this->apiRequest, $this->apiRequest->setEventType(EventTypes::TYPES['CHAT']));
     }
 
     public function testSetEventValue()
@@ -42,12 +42,12 @@ class CreateEventRequestTest extends TestCase
      */
     public function testResolveThrowsExceptionOnMissingGameId()
     {
-        $this->apiRequest->setApiKey('testKey')->setEventType(EventTypes::EVENT_TYPE_CHAT)->setEventValue('Chat text')->resolve();
+        $this->apiRequest->setApiKey('testKey')->setEventType(EventTypes::TYPES['CHAT'])->setEventValue('Chat text')->resolve();
     }
 
     /**
      * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
-     * @expectedExceptionMessage The required option "eventType" is missing.
+     * @expectedExceptionMessage The required option "type" is missing.
      */
     public function testResolveThrowsExceptionOnMissingEventType()
     {
@@ -56,11 +56,20 @@ class CreateEventRequestTest extends TestCase
 
     /**
      * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
-     * @expectedExceptionMessage The required option "eventValue" is missing.
+     * @expectedExceptionMessage The option "type" with value "invalid" is invalid. Accepted values are:
+     */
+    public function testResolveThrowsExceptionOnIncorrectEventType()
+    {
+        $this->apiRequest->setApiKey('testKey')->setGameId(12)->setEventType('invalid')->setEventValue('Chat text')->resolve();
+    }
+
+    /**
+     * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
+     * @expectedExceptionMessage The required option "value" is missing.
      */
     public function testResolveThrowsExceptionOnMissingEventValue()
     {
-        $this->apiRequest->setApiKey('testKey')->setGameId(12)->setEventType(EventTypes::EVENT_TYPE_CHAT)->resolve();
+        $this->apiRequest->setApiKey('testKey')->setGameId(12)->setEventType(EventTypes::TYPES['CHAT'])->resolve();
     }
 
     /**
@@ -69,13 +78,13 @@ class CreateEventRequestTest extends TestCase
      */
     public function testResolveThrowsExceptionOnMissingApiKey()
     {
-        $this->apiRequest->setGameId(12)->setEventType(EventTypes::EVENT_TYPE_CHAT)->setEventValue('Chat text')->resolve();
+        $this->apiRequest->setGameId(12)->setEventType(EventTypes::TYPES['CHAT'])->setEventValue('Chat text')->resolve();
     }
 
     public function testSettingRequest()
     {
         // set required options and resolve
-        $this->apiRequest->setApiKey('testKey')->setGameId(12)->setEventType(EventTypes::EVENT_TYPE_CHAT)->setEventValue('Chat text')->resolve();
+        $this->apiRequest->setApiKey('testKey')->setGameId(12)->setEventType(EventTypes::TYPES['CHAT'])->setEventValue('Chat text')->resolve();
 
         // check http method
         $this->assertEquals('POST', $this->apiRequest->getHttpMethod());
@@ -84,6 +93,6 @@ class CreateEventRequestTest extends TestCase
         // check headers
         $this->assertEquals(['Authorization' => 'Bearer testKey'], $this->apiRequest->getHeaders());
         // check data
-        $this->assertEquals(['type' => EventTypes::EVENT_TYPE_CHAT, 'value' => 'Chat text'], $this->apiRequest->getData());
+        $this->assertEquals(['type' => EventTypes::TYPES['CHAT'], 'value' => 'Chat text'], $this->apiRequest->getData());
     }
 }

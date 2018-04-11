@@ -6,13 +6,14 @@ use BattleshipsApi\Client\Request\ApiRequest;
 
 class GetGamesRequest extends ApiRequest
 {
+    /* protected */ const QUERY = ['available'];
     /**
      * @param bool $available
      * @return $this
      */
     public function setAvailable(bool $available): self
     {
-        return $this->set('uri', sprintf('/games?available=%s', ($available ? 'true' : 'false')));
+        return $this->setQueryParam('available', ($available ? 'true' : 'false'));
     }
 
     /**
@@ -21,7 +22,10 @@ class GetGamesRequest extends ApiRequest
     protected function configure()
     {
         $this
-            ->set('httpMethod', 'GET')
+            ->setUri('/games')
+            ->queryResolver
+                ->setRequired('available')
+                ->setAllowedValues('available', ['true', 'false'])
         ;
     }
 }

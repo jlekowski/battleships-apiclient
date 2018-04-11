@@ -2,19 +2,19 @@
 
 namespace Tests\Request\User;
 
-use BattleshipsApi\Client\Request\User\UpdateUserRequest;
+use BattleshipsApi\Client\Request\User\EditUserRequest;
 use PHPUnit\Framework\TestCase;
 
-class UpdateUserRequestTest extends TestCase
+class EditUserRequestTest extends TestCase
 {
     /**
-     * @var UpdateUserRequest
+     * @var EditUserRequest
      */
     protected $apiRequest;
 
     public function setUp()
     {
-        $this->apiRequest = new UpdateUserRequest();
+        $this->apiRequest = new EditUserRequest();
     }
 
     public function testSetUserId()
@@ -40,7 +40,7 @@ class UpdateUserRequestTest extends TestCase
 
     /**
      * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
-     * @expectedExceptionMessage The required option "requestData" is missing.
+     * @expectedExceptionMessage The required option "name" is missing.
      */
     public function testResolveThrowsExceptionOnMissingUsername()
     {

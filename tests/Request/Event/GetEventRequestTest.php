@@ -31,7 +31,7 @@ class GetEventRequestTest extends TestCase
 
     /**
      * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
-     * @expectedExceptionMessage The required option "gameId" is missing.
+     * @expectedExceptionMessage The required option "uri" is missing.
      */
     public function testResolveThrowsExceptionOnMissingGameId()
     {
@@ -40,7 +40,7 @@ class GetEventRequestTest extends TestCase
 
     /**
      * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
-     * @expectedExceptionMessage The required option "eventId" is missing.
+     * @expectedExceptionMessage The required option "uri" is missing.
      */
     public function testResolveThrowsExceptionOnMissingEventId()
     {

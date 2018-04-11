@@ -11,7 +11,7 @@ use BattleshipsApi\Client\Request\Event\EventTypes;
 use BattleshipsApi\Client\Request\Event\GetEventsRequest;
 use BattleshipsApi\Client\Request\Game\CreateGameRequest;
 use BattleshipsApi\Client\Request\Game\GetGamesRequest;
-use BattleshipsApi\Client\Request\Game\UpdateGameRequest;
+use BattleshipsApi\Client\Request\Game\EditGameRequest;
 use BattleshipsApi\Client\Request\User\CreateUserRequest;
 use BattleshipsApi\Client\Response\ApiResponse;
 use BattleshipsApi\Client\Subscriber\LogSubscriber;
@@ -43,6 +43,8 @@ class VarnishTestCommand extends ApiClientAwareCommand
             ->setDescription('Runs Varnish test')
             ->addArgument('uri', InputArgument::OPTIONAL, 'API base uri', 'http://battleships-api.dev.lekowski.pl:6081')
             ->addArgument('version', InputArgument::OPTIONAL, 'API version', 1)
+            ->addUsage('http://battleships-api.vagrant')
+            ->addUsage('http://battleships-api.dev.lekowski.pl:6081 1 -vv')
         ;
     }
 
@@ -164,7 +166,7 @@ class VarnishTestCommand extends ApiClientAwareCommand
 
 
         // Join gameId2
-        $request = new UpdateGameRequest();
+        $request = new EditGameRequest();
         $request
             ->setGameId($gameId2)
             ->setJoinGame(true)
@@ -228,7 +230,7 @@ class VarnishTestCommand extends ApiClientAwareCommand
         $request = new CreateEventRequest();
         $request
             ->setGameId($gameId2)
-            ->setEventType(EventTypes::EVENT_TYPE_CHAT)
+            ->setEventType(EventTypes::TYPES['CHAT'])
             ->setEventValue('Test chat')
         ;
         $response = $this->apiClient->call($request);
@@ -256,7 +258,7 @@ class VarnishTestCommand extends ApiClientAwareCommand
         $request = new GetEventsRequest();
         $request
             ->setGameId($gameId2)
-            ->setType(EventTypes::EVENT_TYPE_JOIN_GAME)
+            ->setType(EventTypes::TYPES['JOIN_GAME'])
         ;
         $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);
@@ -286,7 +288,7 @@ class VarnishTestCommand extends ApiClientAwareCommand
         $request = new CreateEventRequest();
         $request
             ->setGameId($gameId2)
-            ->setEventType(EventTypes::EVENT_TYPE_CHAT)
+            ->setEventType(EventTypes::TYPES['CHAT'])
             ->setEventValue('Test chat2')
         ;
         $response = $this->apiClient->call($request);
@@ -311,7 +313,7 @@ class VarnishTestCommand extends ApiClientAwareCommand
         $request = new GetEventsRequest();
         $request
             ->setGameId($gameId2)
-            ->setType(EventTypes::EVENT_TYPE_JOIN_GAME)
+            ->setType(EventTypes::TYPES['JOIN_GAME'])
         ;
         $response = $this->apiClient->call($request);
         $this->verifyHeaderFromResponse($response, self::VARNISH_DEBUG_MISS);

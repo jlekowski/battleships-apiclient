@@ -1,3 +1,7 @@
+- CreateGameRequest with optional playerShips
+
+- eventType/eventValue into type/value?
+
 - create GetGameResponse etc. and ShotRequest etc.
 - do I need preRequest (after resolve) event or onComplete? (to hide and show cursor for example)
 

@@ -25,7 +25,7 @@ class CreateUserRequestTest extends TestCase
 
     /**
      * @expectedException \Symfony\Component\OptionsResolver\Exception\ExceptionInterface
-     * @expectedExceptionMessage The required option "requestData" is missing.
+     * @expectedExceptionMessage The required option "name" is missing.
      */
     public function testResolveThrowsExceptionOnMissingUsername()
     {
